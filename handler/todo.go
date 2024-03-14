@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -59,6 +60,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.TodoPostHandler(w, r)
 	case "PUT":
 		h.TodoPutHandler(w, r)
+	case "GET":
+		h.TodoGetHandler(w, r)
 	default:
 	}
 }
@@ -79,6 +82,33 @@ func UpdateTodoRequestDecode(req *model.UpdateTODORequest, r *http.Request) erro
 }
 
 func UpdateTodoResponseEncode(res *model.UpdateTODOResponse, w http.ResponseWriter) error {
+	var encoder = json.NewEncoder(w)
+	return encoder.Encode(res)
+}
+
+func ReadTodoRequestDecode(req *model.ReadTODORequest, r *http.Request) error {
+	var id_string = r.URL.Query().Get("prev_id")
+
+	log.Println(id_string)
+	id, err := strconv.ParseInt(id_string, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	log.Println(id)
+	var size_string = r.URL.Query().Get("size")
+	size, err := strconv.ParseInt(size_string, 10, 64)
+	if err != nil {
+		// スキーマより デフォルト値が５なので
+		size = 5
+	}
+
+	req.PrevID = id
+	req.Size = size
+	return nil
+}
+
+func ReadTodoResponseEncode(res *model.ReadTODOResponse, w http.ResponseWriter) error {
 	var encoder = json.NewEncoder(w)
 	return encoder.Encode(res)
 }
@@ -134,6 +164,36 @@ func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
 		TODO: *todo,
 	}
 	var err2 = UpdateTodoResponseEncode(&res, w)
+	if err2 != nil {
+		log.Println(err2)
+		http.Error(w, "failed to json encode", http.StatusBadRequest)
+		return
+	}
+}
+
+func (h *TODOHandler) TodoGetHandler(w http.ResponseWriter, r *http.Request) {
+	// エラーを処理する責務を持つ
+	var req = model.ReadTODORequest{}
+
+	err := ReadTodoRequestDecode(&req, r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to decode: Query Parameter", http.StatusBadRequest)
+		return
+	}
+
+	todos, err := h.svc.ReadTODO(r.Context(), req.PrevID, req.Size)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to read TODO", http.StatusBadRequest)
+		return
+	}
+
+	var res = model.ReadTODOResponse{
+		TODOs: todos,
+	}
+
+	var err2 = ReadTodoResponseEncode(&res, w)
 	if err2 != nil {
 		log.Println(err2)
 		http.Error(w, "failed to json encode", http.StatusBadRequest)
