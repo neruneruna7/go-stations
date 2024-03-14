@@ -23,8 +23,8 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	var encoder = json.NewEncoder(w)
 	// これResultみたいなものかと思ったら，エラーが返ってくるのか
-	var e = encoder.Encode(res)
-	if e != nil {
-		log.Println(e)
+	var err = encoder.Encode(res)
+	if err != nil {
+		log.Println(err)
 	}
 }

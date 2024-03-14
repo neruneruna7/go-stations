@@ -27,23 +27,26 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 	)
 
 	// dbへ保存する
-	var result1, e1 = s.db.ExecContext(ctx, insert, subject, description)
-	if e1 != nil {
-		return nil, e1
+	result, err := s.db.ExecContext(ctx, insert, subject, description)
+	if err != nil {
+		return nil, err
 	}
-	var id, e2 = result1.LastInsertId()
+	id, err := result.LastInsertId()
 
-	if e2 != nil {
-		return nil, e2
+	if err != nil {
+		return nil, err
 	}
 
 	var todo model.TODO
 	todo.ID = id
 
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
-	var e3 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	var err2 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	if err2 != nil {
+		return nil, err2
+	}
 
-	return &todo, e3
+	return &todo, nil
 }
 
 // ReadTODO reads TODOs on DB.
@@ -66,14 +69,17 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
 	// dbを更新する
-	var result1, e1 = s.db.ExecContext(ctx, update, subject, description, id)
-	if e1 != nil {
-		return nil, e1
+	// えぇ，varだとエラーになって，:=だとエラーにならない...
+	// :=だとどちらか片方の値が違う変数名なら大丈夫っぽい
+	// varだとどちらも違う変数名じゃないとダメっぽい
+	result, err := s.db.ExecContext(ctx, update, subject, description, id)
+	if err != nil {
+		return nil, err
 	}
 
-	var affected_row_count, e2 = result1.RowsAffected()
-	if e2 != nil {
-		return nil, e2
+	affected_row_count, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
 	}
 
 	if affected_row_count == 0 {
@@ -84,9 +90,11 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
 	var todo model.TODO
 	todo.ID = id
-	var e3 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
-	if e3 != nil {
-		return nil, e3
+	// err := rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	// エラーになる．えぇ...
+	var err2 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	if err2 != nil {
+		return nil, err2
 	}
 
 	return &todo, nil

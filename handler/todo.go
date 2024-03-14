@@ -57,16 +57,16 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var req model.CreateTODORequest
 
-		var e1 = TODORequestDecode(&req, r)
-		if e1 != nil {
-			log.Println(e1)
+		err := TODORequestDecode(&req, r)
+		if err != nil {
+			log.Println(err)
 			http.Error(w, "failed to decode request", http.StatusBadRequest)
 			return
 		}
 
-		var todo, e2 = h.svc.CreateTODO(r.Context(), req.Subject, req.Description)
-		if e2 != nil {
-			log.Println(e2)
+		todo, err := h.svc.CreateTODO(r.Context(), req.Subject, req.Description)
+		if err != nil {
+			log.Println(err)
 			http.Error(w, "failed to create TODO", http.StatusBadRequest)
 			return
 		}
@@ -74,9 +74,9 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var res = &model.CreateTODOResponse{
 			TODO: *todo,
 		}
-		var e3 = TODOResponseEncode(res, w)
-		if e3 != nil {
-			log.Println(e3)
+		var err2 = TODOResponseEncode(res, w)
+		if err2 != nil {
+			log.Println(err2)
 			http.Error(w, "failed to encode response", http.StatusBadRequest)
 			return
 		}
