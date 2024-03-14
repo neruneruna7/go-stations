@@ -2,6 +2,9 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"log"
+	"net/http"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -47,4 +50,45 @@ func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) 
 func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) (*model.DeleteTODOResponse, error) {
 	_ = h.svc.DeleteTODO(ctx, nil)
 	return &model.DeleteTODOResponse{}, nil
+}
+
+// ServeHTTP implements http.Handler interface.
+func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var req model.CreateTODORequest
+
+		var e1 = TODORequestDecode(&req, r)
+		if e1 != nil {
+			log.Println(e1)
+			http.Error(w, "failed to decode request", http.StatusBadRequest)
+			return
+		}
+
+		var todo, e2 = h.svc.CreateTODO(r.Context(), req.Subject, req.Description)
+		if e2 != nil {
+			log.Println(e2)
+			http.Error(w, "failed to create TODO", http.StatusBadRequest)
+			return
+		}
+
+		var res = &model.CreateTODOResponse{
+			TODO: *todo,
+		}
+		var e3 = TODOResponseEncode(res, w)
+		if e3 != nil {
+			log.Println(e3)
+			http.Error(w, "failed to encode response", http.StatusBadRequest)
+			return
+		}
+	}
+}
+
+func TODORequestDecode(req *model.CreateTODORequest, r *http.Request) error {
+	var decoder = json.NewDecoder(r.Body)
+	return decoder.Decode(&req)
+}
+
+func TODOResponseEncode(res *model.CreateTODOResponse, w http.ResponseWriter) error {
+	var encoder = json.NewEncoder(w)
+	return encoder.Encode(res)
 }
