@@ -26,7 +26,22 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
 
-	return nil, nil
+	// dbへ保存する
+	var result1, e1 = s.db.ExecContext(ctx, insert, subject, description)
+	if e1 != nil {
+		return nil, e1
+	}
+	var id, e2 = result1.LastInsertId()
+
+	if e2 != nil {
+		return nil, e2
+	}
+
+	var todo model.TODO
+	var rows = s.db.QueryRowContext(ctx, confirm, id)
+	var e3 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+
+	return &todo, e3
 }
 
 // ReadTODO reads TODOs on DB.
@@ -35,6 +50,9 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 		read       = `SELECT id, subject, description, created_at, updated_at FROM todos ORDER BY id DESC LIMIT ?`
 		readWithID = `SELECT id, subject, description, created_at, updated_at FROM todos WHERE id < ? ORDER BY id DESC LIMIT ?`
 	)
+
+	// // クエリの中の?に束縛される値をquery以後の引数で指定してるように思われる
+	// s.db.QueryRowContext(ctx, read, size)
 
 	return nil, nil
 }
