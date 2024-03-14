@@ -54,32 +54,11 @@ func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) 
 
 // ServeHTTP implements http.Handler interface.
 func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		var req model.CreateTODORequest
+	switch r.Method {
+	case "Post":
+		h.TodoPostHandler(w, r)
 
-		err := TODORequestDecode(&req, r)
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "failed to decode request", http.StatusBadRequest)
-			return
-		}
-
-		todo, err := h.svc.CreateTODO(r.Context(), req.Subject, req.Description)
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "failed to create TODO", http.StatusBadRequest)
-			return
-		}
-
-		var res = &model.CreateTODOResponse{
-			TODO: *todo,
-		}
-		var err2 = TODOResponseEncode(res, w)
-		if err2 != nil {
-			log.Println(err2)
-			http.Error(w, "failed to encode response", http.StatusBadRequest)
-			return
-		}
+	default:
 	}
 }
 
@@ -91,4 +70,33 @@ func TODORequestDecode(req *model.CreateTODORequest, r *http.Request) error {
 func TODOResponseEncode(res *model.CreateTODOResponse, w http.ResponseWriter) error {
 	var encoder = json.NewEncoder(w)
 	return encoder.Encode(res)
+}
+
+func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
+	// エラーを処理する責務を持つ
+	var req model.CreateTODORequest
+
+	err := TODORequestDecode(&req, r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to decode request", http.StatusBadRequest)
+		return
+	}
+
+	todo, err := h.svc.CreateTODO(r.Context(), req.Subject, req.Description)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to create TODO", http.StatusBadRequest)
+		return
+	}
+
+	var res = model.CreateTODOResponse{
+		TODO: *todo,
+	}
+	var err2 = TODOResponseEncode(&res, w)
+	if err2 != nil {
+		log.Println(err2)
+		http.Error(w, "failed to encode response", http.StatusBadRequest)
+		return
+	}
 }
