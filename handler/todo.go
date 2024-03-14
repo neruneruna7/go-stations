@@ -85,7 +85,7 @@ func UpdateTodoResponseEncode(res *model.UpdateTODOResponse, w http.ResponseWrit
 
 func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req model.CreateTODORequest
+	var req = model.CreateTODORequest{}
 
 	err := CreateTodoRequestDecode(&req, r)
 	if err != nil {
@@ -114,7 +114,7 @@ func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req model.UpdateTODORequest
+	var req = model.UpdateTODORequest{}
 
 	err := UpdateTodoRequestDecode(&req, r)
 	if err != nil {

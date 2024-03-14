@@ -37,7 +37,7 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		return nil, err
 	}
 
-	var todo model.TODO
+	var todo = model.TODO{}
 	todo.ID = id
 
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
@@ -57,7 +57,7 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 	)
 	// prev_idが指定されているかいないかは，0かそれ以外という定義だろうか
 
-	var rows *sql.Rows
+	var rows *sql.Rows = &sql.Rows{}
 	if prevID == 0 {
 		// クエリの中の?に束縛される値をquery以後の引数で指定してるように思われる
 		inner_rows, err := s.db.QueryContext(ctx, read, size)
@@ -84,7 +84,7 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 
 	var todos = []*model.TODO{}
 	for rows.Next() {
-		var todo model.TODO
+		var todo = model.TODO{}
 		var err = rows.Scan(&todo.ID, &todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -128,7 +128,7 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 	}
 
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
-	var todo model.TODO
+	var todo = model.TODO{}
 	todo.ID = id
 	// err := rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 	// エラーになる．えぇ...
