@@ -55,19 +55,30 @@ func (h *TODOHandler) Delete(ctx context.Context, req *model.DeleteTODORequest) 
 // ServeHTTP implements http.Handler interface.
 func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case "Post":
+	case "POST":
 		h.TodoPostHandler(w, r)
-
+	case "PUT":
+		h.TodoPutHandler(w, r)
 	default:
 	}
 }
 
-func TODORequestDecode(req *model.CreateTODORequest, r *http.Request) error {
+func CreateTodoRequestDecode(req *model.CreateTODORequest, r *http.Request) error {
 	var decoder = json.NewDecoder(r.Body)
 	return decoder.Decode(&req)
 }
 
-func TODOResponseEncode(res *model.CreateTODOResponse, w http.ResponseWriter) error {
+func CreateTodoResponseEncode(res *model.CreateTODOResponse, w http.ResponseWriter) error {
+	var encoder = json.NewEncoder(w)
+	return encoder.Encode(res)
+}
+
+func UpdateTodoRequestDecode(req *model.UpdateTODORequest, r *http.Request) error {
+	var decoder = json.NewDecoder(r.Body)
+	return decoder.Decode(&req)
+}
+
+func UpdateTodoResponseEncode(res *model.UpdateTODOResponse, w http.ResponseWriter) error {
 	var encoder = json.NewEncoder(w)
 	return encoder.Encode(res)
 }
@@ -76,7 +87,7 @@ func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
 	var req model.CreateTODORequest
 
-	err := TODORequestDecode(&req, r)
+	err := CreateTodoRequestDecode(&req, r)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to decode request", http.StatusBadRequest)
@@ -93,10 +104,39 @@ func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 	var res = model.CreateTODOResponse{
 		TODO: *todo,
 	}
-	var err2 = TODOResponseEncode(&res, w)
+	var err2 = CreateTodoResponseEncode(&res, w)
 	if err2 != nil {
 		log.Println(err2)
 		http.Error(w, "failed to encode response", http.StatusBadRequest)
+		return
+	}
+}
+
+func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
+	// エラーを処理する責務を持つ
+	var req model.UpdateTODORequest
+
+	err := UpdateTodoRequestDecode(&req, r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to json decode", http.StatusBadRequest)
+		return
+	}
+
+	todo, err := h.svc.UpdateTODO(r.Context(), req.ID, req.Subject, req.Description)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to update TODO", http.StatusBadRequest)
+		return
+	}
+
+	var res = model.UpdateTODOResponse{
+		TODO: *todo,
+	}
+	var err2 = UpdateTodoResponseEncode(&res, w)
+	if err2 != nil {
+		log.Println(err2)
+		http.Error(w, "failed to json encode", http.StatusBadRequest)
 		return
 	}
 }
