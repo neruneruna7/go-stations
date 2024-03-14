@@ -55,11 +55,51 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 		read       = `SELECT id, subject, description, created_at, updated_at FROM todos ORDER BY id DESC LIMIT ?`
 		readWithID = `SELECT id, subject, description, created_at, updated_at FROM todos WHERE id < ? ORDER BY id DESC LIMIT ?`
 	)
+	// prev_idが指定されているかいないかは，0かそれ以外という定義だろうか
 
-	// // クエリの中の?に束縛される値をquery以後の引数で指定してるように思われる
-	// s.db.QueryRowContext(ctx, read, size)
+	var rows *sql.Rows
+	if prevID == 0 {
+		// クエリの中の?に束縛される値をquery以後の引数で指定してるように思われる
+		inner_rows, err := s.db.QueryContext(ctx, read, size)
+		if err != nil {
+			return nil, err
+		}
+		rows = inner_rows
+	} else {
+		// クエリの中の?に束縛される値をquery以後の引数で指定してるように思われる
+		inner_rows, err := s.db.QueryContext(ctx, readWithID, prevID, size)
+		if err != nil {
+			return nil, err
+		}
+		rows = inner_rows
+	}
 
-	return nil, nil
+	// var todos []*model.TODO
+	// 上記だとテストが通らない
+	// 下記だとテストが通る
+	// nilのままなのか？
+	// 初期化されてないからの可能性が高い
+	// 上記の書き方をよく見かけるから，勝手に初期化してるのかと思ったら
+	// Goでも変数宣言時に必ず初期化するようにしよう
+
+	var todos = []*model.TODO{}
+	for rows.Next() {
+		var todo model.TODO
+		var err = rows.Scan(&todo.ID, &todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		todos = append(todos, &todo)
+	}
+
+	// // 条件式の前に単純な文を置けるようだ
+	// // この変数はif文のスコープになるとのこと
+	// if err := rows.Err(); err != nil {
+	// 	return nil, err
+	// }
+
+	return todos, nil
 }
 
 // UpdateTODO updates the TODO on DB.
