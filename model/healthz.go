@@ -2,5 +2,7 @@ package model
 
 // A HealthzResponse expresses health check message.
 type HealthzResponse struct {
-	Message string
+	// フィールドの後ろにいろいろ書いたのがstruct tagっぽい？
+	// Rustのderiveマクロみたいなものか？
+	Message string `json:"message"`
 }
