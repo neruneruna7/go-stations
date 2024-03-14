@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -51,6 +52,10 @@ func realMain() error {
 	mux := router.NewRouter(todoDB)
 
 	// TODO: サーバーをlistenする
+	// portを束縛する方法があるはず
+	// NewRouterのドキュメントが見当たらない...?
+	// TechTrain独自のやつか？
+	http.ListenAndServe(port, mux)
 
 	return nil
 }
