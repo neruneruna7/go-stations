@@ -26,6 +26,5 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var e = encoder.Encode(res)
 	if e != nil {
 		log.Println(e)
-		http.Error(w, "Json Serialize Error", http.StatusInternalServerError)
 	}
 }
