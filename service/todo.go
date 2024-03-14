@@ -65,6 +65,29 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		update  = `UPDATE todos SET subject = ?, description = ? WHERE id = ?`
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
 	)
+	// dbを更新する
+	var result1, e1 = s.db.ExecContext(ctx, update, subject, description)
+	if e1 != nil {
+		return nil, e1
+	}
+
+	var affected_row_count, e2 = result1.RowsAffected()
+	if e2 != nil {
+		return nil, e2
+	}
+
+	if affected_row_count == 0 {
+		// え，error側がポインタ渡すって情報はどこなの
+		return nil, &model.ErrNotFound{}
+	}
+
+	// var rows = s.db.QueryRowContext(ctx, confirm, id)
+	// var todo model.TODO
+	// todo.ID = int(id)
+	// var e3 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	// if e3 != nil {
+	// 	return nil, e3
+	// }
 
 	return nil, nil
 }
