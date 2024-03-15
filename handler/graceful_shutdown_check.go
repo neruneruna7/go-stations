@@ -16,6 +16,6 @@ func NewGracefulShutdownHandler() *GracefulShutdownHandler {
 func (h *GracefulShutdownHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 5秒待ってからokを返す
 	// これはGraceful Shutdownのテスト用のハンドラ
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 7)
 	http.Error(w, "OK", http.StatusOK)
 }

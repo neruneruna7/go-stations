@@ -35,12 +35,7 @@ func realMain() error {
 		log.Println("Error loading .env file")
 	}
 
-	var basic_auth_user_id = os.Getenv("BASIC_AUTH_USER_ID")
-	var basic_auth_password = os.Getenv("BASIC_AUTH_PASSWORD")
-	var basic_auth_config = model.BasicAuthConfig{
-		BasicAuthUserId:   basic_auth_user_id,
-		BasicAuthPassword: basic_auth_password,
-	}
+	var basic_auth_config = basic_auth_config_loader()
 
 	log.Println("Loading PORT env")
 	port := os.Getenv("PORT")
@@ -71,7 +66,7 @@ func realMain() error {
 	defer todoDB.Close()
 
 	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
-	mux := router.NewRouter(todoDB, &basic_auth_config)
+	mux := router.NewRouter(todoDB, basic_auth_config)
 
 	log.Println("running port:", port)
 	// TODO: サーバーをlistenする
@@ -85,22 +80,56 @@ func realMain() error {
 	// どのシグナルとか割り込みに対応するかはあとで考えよう
 	// とりあえず，Ctrl+Cへの対応
 	var ctx, stop = signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
+	// このstopの役割がわからん
+	// deferをつけずにやったら起動して即終了したな
+	// signal receivedってログには来てるし，この関数の最後まで突き抜けたのかな
+
 	defer stop()
 
+	// ゴルーチンでサーバーを起動する
 	go func() {
 		server.ListenAndServe()
 	}()
 
 	log.Println("awaiting signal")
 	<-ctx.Done()
+	// <-はチャンネルへ値を送信するといういことらしい
+	// ということはメインチャンネルに値を送信してる？
+	// 受け取る変数がないということは，事実上待機してるのと同じかな
+	// ctx.Done()の内部では，NotifyContexで設定したシグナルが来るまで休眠してると思われる
 	log.Println("signal received")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// 5秒で終了するようにする
+	// でも，5秒待たずに終了することがある
+	var ctx2, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 
-	err = server.Shutdown(ctx)
+	// もしや，待つまでもなくシャットダウンが完了して，この関数が終了したとき
+	// このdefer cancel()が待つのを終わらせるのか？
+	// 実行されないようにしても待つ必要がなければすぐ終了したな
+	// 必要なら待ってたし 役割はなんだろう
+	// deferをつけずにやったらシグナル即終了になったな
+	defer cancel()
+	// cancel()
+
+	// defer stop()
+	// defer cancel()
+	// 両方動作しないようにすると，シグナルで待たずに即終了するようになった．
+	// どちらか片方でも動作すると，シグナル待ちになった
+	// いやまて．どっちもコメントアウトでもシグナル待ちになるわ
+
+	err = server.Shutdown(ctx2)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func basic_auth_config_loader() *model.BasicAuthConfig {
+	var basic_auth_user_id = os.Getenv("BASIC_AUTH_USER_ID")
+	var basic_auth_password = os.Getenv("BASIC_AUTH_PASSWORD")
+	var basic_auth_config = model.BasicAuthConfig{
+		BasicAuthUserId:   basic_auth_user_id,
+		BasicAuthPassword: basic_auth_password,
+	}
+	return &basic_auth_config
 }
