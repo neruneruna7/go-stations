@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/TechBowl-japan/go-stations/model"
@@ -23,6 +24,8 @@ func NewTODOService(db *sql.DB) *TODOService {
 
 // CreateTODO creates a TODO on DB.
 func (s *TODOService) CreateTODO(ctx context.Context, subject, description string) (*model.TODO, error) {
+	log.Println("CreateTODO started")
+
 	const (
 		insert  = `INSERT INTO todos(subject, description) VALUES(?, ?)`
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
@@ -42,17 +45,22 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 	var todo = model.TODO{}
 	todo.ID = id
 
+	log.Println("CreateTodo started")
+
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
 	var err2 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 	if err2 != nil {
 		return nil, err2
 	}
 
+	log.Println("createTODO finished")
 	return &todo, nil
 }
 
 // ReadTODO reads TODOs on DB.
 func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*model.TODO, error) {
+	log.Println("ReadTODO started")
+
 	const (
 		read       = `SELECT id, subject, description, created_at, updated_at FROM todos ORDER BY id DESC LIMIT ?`
 		readWithID = `SELECT id, subject, description, created_at, updated_at FROM todos WHERE id < ? ORDER BY id DESC LIMIT ?`
@@ -101,11 +109,14 @@ func (s *TODOService) ReadTODO(ctx context.Context, prevID, size int64) ([]*mode
 	// 	return nil, err
 	// }
 
+	log.Println("ReadTODO finished")
 	return todos, nil
 }
 
 // UpdateTODO updates the TODO on DB.
 func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, description string) (*model.TODO, error) {
+	log.Println("UpdateTODO started")
+
 	const (
 		update  = `UPDATE todos SET subject = ?, description = ? WHERE id = ?`
 		confirm = `SELECT subject, description, created_at, updated_at FROM todos WHERE id = ?`
@@ -119,15 +130,17 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		return nil, err
 	}
 
-	affected_row_count, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return nil, err
 	}
 
-	if affected_row_count == 0 {
+	if rowsAffected == 0 {
 		// え，error側がポインタ渡すって情報はどこなの
 		return nil, &model.ErrNotFound{}
 	}
+
+	log.Println("Affected row count: ", rowsAffected)
 
 	var rows = s.db.QueryRowContext(ctx, confirm, id)
 	var todo = model.TODO{}
@@ -139,11 +152,14 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 		return nil, err2
 	}
 
+	log.Println("UpdateTODO finished")
 	return &todo, nil
 }
 
 // DeleteTODO deletes TODOs on DB by ids.
 func (s *TODOService) DeleteTODO(ctx context.Context, ids []int64) error {
+	log.Println("DeleteTODO started")
+
 	const deleteFmt = `DELETE FROM todos WHERE id IN (?%s)`
 	// 空またはnilの場合は何もしない
 	if len(ids) == 0 {
@@ -166,15 +182,19 @@ func (s *TODOService) DeleteTODO(ctx context.Context, ids []int64) error {
 	}
 
 	// 影響を受けた行数を取得
-	rowsAfffected, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
 
+	log.Println("Affected row count: ", rowsAffected)
+
 	// 影響を受けた行数が0の場合はNotFoundエラーを返す
-	if rowsAfffected == 0 {
+	if rowsAffected == 0 {
 		return &model.ErrNotFound{}
 	}
+
+	log.Println("DeleteTODO started")
 
 	return nil
 }

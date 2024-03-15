@@ -14,10 +14,15 @@ func Recovery(h http.Handler) http.Handler {
 		// stack unwind中かな
 		// 巻き戻し中に実行できるのは，deferで遅延指定された関数内だけ
 		defer func() {
+			log.Println("Recovery Middlware started")
+
 			if err := recover(); err != nil {
-				log.Println(err)
+
+				log.Println("Error: ", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
+			log.Println("Recovery Middlware finished")
+
 		}()
 
 		h.ServeHTTP(w, r)

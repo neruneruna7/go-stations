@@ -18,6 +18,8 @@ func NewHealthzHandler() *HealthzHandler {
 
 // ServeHTTP implements http.Handler interface.
 func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("Healthz Handler started")
+
 	var res = &model.HealthzResponse{
 		Message: "OK",
 	}
@@ -27,4 +29,6 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	log.Println("Healthz Handler finished")
+
 }
