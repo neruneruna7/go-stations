@@ -1,8 +1,23 @@
 GET http://localhost:8080/healthz
 
 
-# 必ずpanicを起こすエンドポイント
-# basic認証
+# basic認証のテスト
+## 必ずpanicを起こすエンドポイント
+### 正常系
 GET http://localhost:8080/do-panic
-Authorization: Basic 
+Authorization: Basic 略
+
+
+### 異常系
+
+### 間違った情報
+GET http://localhost:8080/do-panic
+Authorization: Basic turtle dog
+
+### 情報が空
+GET http://localhost:8080/do-panic
+Authorization: Basic
+
+### 情報がない
+GET http://localhost:8080/do-panic
 
