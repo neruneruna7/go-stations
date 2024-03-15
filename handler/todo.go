@@ -62,6 +62,8 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.TodoPutHandler(w, r)
 	case "GET":
 		h.TodoGetHandler(w, r)
+	case "DELETE":
+		h.TodoDeleteHandler(w, r)
 	default:
 	}
 }
@@ -109,6 +111,17 @@ func ReadTodoRequestDecode(req *model.ReadTODORequest, r *http.Request) error {
 }
 
 func ReadTodoResponseEncode(res *model.ReadTODOResponse, w http.ResponseWriter) error {
+	var encoder = json.NewEncoder(w)
+	return encoder.Encode(res)
+}
+
+func DeleteTodoRequestDecode(req *model.DeleteTODORequest, r *http.Request) error {
+	var decoder = json.NewDecoder(r.Body)
+	return decoder.Decode(&req)
+}
+
+// 正直，シリアライズするところとレスポンス書き込みの責務を分離したい
+func DeleteTodoResponseEncode(res *model.DeleteTODOResponse, w http.ResponseWriter) error {
 	var encoder = json.NewEncoder(w)
 	return encoder.Encode(res)
 }
@@ -196,6 +209,47 @@ func (h *TODOHandler) TodoGetHandler(w http.ResponseWriter, r *http.Request) {
 	var err2 = ReadTodoResponseEncode(&res, w)
 	if err2 != nil {
 		log.Println(err2)
+		http.Error(w, "failed to json encode", http.StatusBadRequest)
+		return
+	}
+}
+
+func (h *TODOHandler) TodoDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	// エラーを処理する責務を持つ
+	var req = model.DeleteTODORequest{}
+
+	err := DeleteTodoRequestDecode(&req, r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to json decode", http.StatusBadRequest)
+		return
+	}
+
+	// idが空のときは400BadRequestを返す
+	if len(req.IDs) == 0 {
+		http.Error(w, "id is empty", http.StatusBadRequest)
+		return
+	}
+
+	err2 := h.svc.DeleteTODO(r.Context(), req.IDs)
+	if err2 != nil {
+		log.Println(err2)
+		// err2がmodel.ErrNotFoundのときは404NotFoundを返す
+		// 型変換に成功するかどうかで判定しているようだ
+		if _, ok := err2.(*model.ErrNotFound); ok {
+			http.Error(w, "failed to delete TODO", http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, "failed to delete TODO", http.StatusBadRequest)
+		return
+	}
+
+	var res = model.DeleteTODOResponse{}
+
+	var err3 = DeleteTodoResponseEncode(&res, w)
+	if err3 != nil {
+		log.Println(err3)
 		http.Error(w, "failed to json encode", http.StatusBadRequest)
 		return
 	}
