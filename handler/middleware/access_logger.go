@@ -17,6 +17,7 @@ type LogContent struct {
 }
 
 func AccessLogger(h http.Handler) http.Handler {
+	log.Println("AccessLogger Middlware started")
 
 	// 今回のコードだと，これはNewRouterが呼ばれた時に実行される
 	// クロージャ内はリクエストが来た時に動くことがわかるように，こういうロギングをつけてみた
@@ -53,5 +54,6 @@ func AccessLogger(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 		log.Println("Closure AccessLogger Middlware finished")
 	}
+	log.Println("AccessLogger Middlware finished")
 	return http.HandlerFunc(fn)
 }

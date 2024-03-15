@@ -16,6 +16,8 @@ const CTX_OS_KEY ctxKey = "OS"
 
 // リクエストを送ってきたデバイスのOSを取得する
 func CaptureDeviceOs(h http.Handler) http.Handler {
+	log.Println("CaptureDeviceOs Middlware started")
+
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Closure CaptureDeviceOs Middlware started")
 
@@ -40,6 +42,8 @@ func CaptureDeviceOs(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r2)
 		log.Println("Closure CaptureDeviceOs Middlware fnished")
 	}
+
+	log.Println("CaptureDeviceOs Middlware finished")
 	return http.HandlerFunc(fn)
 }
 

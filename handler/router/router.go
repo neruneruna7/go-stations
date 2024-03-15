@@ -28,5 +28,9 @@ func NewRouter(todoDB *sql.DB, basic_auth_config *model.BasicAuthConfig) *http.S
 	// var doPanicHandler = middleware.Recovery(handler.NewDoPanicHandler())
 	var doPanicHandler = middleware.CommonMiddlwares(middleware.BasicAuth(basic_auth_config, handler.NewDoPanicHandler()))
 	mux.Handle("/do-panic", doPanicHandler)
+
+	// グレイスフルシャットダウンの確認用
+	var gracefulShutdownHandler = middleware.CommonMiddlwares(handler.NewGracefulShutdownHandler())
+	mux.Handle("/graceful-shutdown", gracefulShutdownHandler)
 	return mux
 }

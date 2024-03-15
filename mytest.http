@@ -21,3 +21,5 @@ Authorization: Basic
 ### 情報がない
 GET http://localhost:8080/do-panic
 
+# グレイスフルシャットダウンのテスト
+GET http://localhost:8080/graceful-shutdown
