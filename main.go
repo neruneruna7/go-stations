@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/TechBowl-japan/go-stations/db"
@@ -73,9 +76,31 @@ func realMain() error {
 	log.Println("running port:", port)
 	// TODO: サーバーをlistenする
 	// portを束縛する方法があるはず
-	// NewRouterのドキュメントが見当たらない...?
-	// TechTrain独自のやつか？
-	http.ListenAndServe(port, mux)
+	var server = http.Server{
+		Addr:    port,
+		Handler: mux,
+	}
+
+	// linixはカーネルからいろいろシグナル来ることもあるしね
+	// どのシグナルとか割り込みに対応するかはあとで考えよう
+	// とりあえず，Ctrl+Cへの対応
+	var ctx, stop = signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
+	defer stop()
+
+	go func() {
+		server.ListenAndServe()
+	}()
+
+	log.Println("awaiting signal")
+	<-ctx.Done()
+	log.Println("signal received")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = server.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
