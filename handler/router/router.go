@@ -22,7 +22,9 @@ func NewRouter(todoDB *sql.DB) *http.ServeMux {
 	mux.Handle("/todos", todoHandler)
 
 	// 必ずpanicを起こす
-	var doPanicHandler = middleware.Recovery(handler.NewDoPanicHandler())
+
+	var doPanicHandler = middleware.Recovery(middleware.CaptureDeviceOs(handler.NewDoPanicHandler()))
+	// var doPanicHandler = middleware.Recovery(handler.NewDoPanicHandler())
 	mux.Handle("/do-panic", doPanicHandler)
 	return mux
 }
