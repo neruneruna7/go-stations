@@ -1,1 +1,5 @@
 GET http://localhost:8080/healthz
+
+
+# 必ずpanicを起こすエンドポイント
+GET http://localhost:8080/do-panic
