@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -18,26 +17,28 @@ const CTX_OS_KEY ctxKey = "OS"
 // リクエストを送ってきたデバイスのOSを取得する
 func CaptureDeviceOs(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Closure CaptureDeviceOs Middlware started")
+
 		var user_agent_str = r.UserAgent()
 		var ua = useragent.Parse(user_agent_str)
 		var ua_os = ua.OS
-		log.Println("hey!")
-		log.Println(ua_os)
+		log.Println("OS:", ua_os)
 
 		// ブロック内でシャドーイングできないのがもどかしい
 		// 解決策はあるはずなのだが
 		var r2 = SetOs(r, ua_os)
 
-		{
-			// ContextにOS名が登録されているか確認する
-			val, ok := r.Context().Value(CTX_OS_KEY).(string)
-			fmt.Println(val, ok)
-		}
+		// {
+		// 	// ContextにOS名が登録されているか確認する
+		// 	val, ok := r.Context().Value(CTX_OS_KEY).(string)
+		// 	fmt.Println(val, ok)
+		// }
 
 		// 連鎖する以上，引数でとっているハンドラ（h）を，何かしら処理あるいは次に渡す必要があるはず
 		// それがこのServeHTTPかな？
 		// であるならば，コード内でのこのserveHttpの実行場所には，時間軸の関係があるはず
 		h.ServeHTTP(w, r2)
+		log.Println("Closure CaptureDeviceOs Middlware fnished")
 	}
 	return http.HandlerFunc(fn)
 }
