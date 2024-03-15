@@ -8,6 +8,8 @@ import (
 
 	"github.com/TechBowl-japan/go-stations/db"
 	"github.com/TechBowl-japan/go-stations/handler/router"
+	"github.com/TechBowl-japan/go-stations/model"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -25,6 +27,18 @@ func realMain() error {
 		defaultDBPath = ".sqlite3/todo.db"
 	)
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
+	var basic_auth_user_id = os.Getenv("BASIC_AUTH_USER_ID")
+	var basic_auth_password = os.Getenv("BASIC_AUTH_PASSWORD")
+	var basic_auth_config = model.BasicAuthConfig{
+		BasicAuthUserId:   basic_auth_user_id,
+		BasicAuthPassword: basic_auth_password,
+	}
+
 	log.Println("Loading PORT env")
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -39,7 +53,6 @@ func realMain() error {
 
 	log.Println("Setting time zone")
 	// set time zone
-	var err error
 	time.Local, err = time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return err
@@ -55,7 +68,7 @@ func realMain() error {
 	defer todoDB.Close()
 
 	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
-	mux := router.NewRouter(todoDB)
+	mux := router.NewRouter(todoDB, &basic_auth_config)
 
 	log.Println("running port:", port)
 	// TODO: サーバーをlistenする

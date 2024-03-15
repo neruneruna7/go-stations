@@ -6,10 +6,11 @@ import (
 
 	"github.com/TechBowl-japan/go-stations/handler"
 	"github.com/TechBowl-japan/go-stations/handler/middleware"
+	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
 )
 
-func NewRouter(todoDB *sql.DB) *http.ServeMux {
+func NewRouter(todoDB *sql.DB, basic_auth_config *model.BasicAuthConfig) *http.ServeMux {
 	// register routes
 	mux := http.NewServeMux()
 
