@@ -14,19 +14,19 @@ func NewRouter(todoDB *sql.DB, basic_auth_config *model.BasicAuthConfig) *http.S
 	// register routes
 	mux := http.NewServeMux()
 
-	var healthzHandler = middleware.Middlwares(handler.NewHealthzHandler())
+	var healthzHandler = middleware.CommonMiddlwares(handler.NewHealthzHandler())
 	mux.HandleFunc("/healthz", healthzHandler.ServeHTTP)
 
 	// Todoについて
 	var TODOService = service.NewTODOService(todoDB)
-	var todoHandler = middleware.Middlwares(handler.NewTODOHandler(TODOService))
+	var todoHandler = middleware.CommonMiddlwares(handler.NewTODOHandler(TODOService))
 	mux.Handle("/todos", todoHandler)
 
 	// 必ずpanicを起こす
 
 	// var doPanicHandler = middleware.Recovery(middleware.CaptureDeviceOs(handler.NewDoPanicHandler()))
 	// var doPanicHandler = middleware.Recovery(handler.NewDoPanicHandler())
-	var doPanicHandler = middleware.Middlwares(handler.NewDoPanicHandler())
+	var doPanicHandler = middleware.CommonMiddlwares(handler.NewDoPanicHandler())
 	mux.Handle("/do-panic", doPanicHandler)
 	return mux
 }

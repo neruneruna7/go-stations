@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func Middlwares(h http.Handler) http.Handler {
+func CommonMiddlwares(h http.Handler) http.Handler {
 	// いちいちミドルウェアをすべて適用するのが面倒だから，まとめて適用する関数を作る
 
 	fn := func(w http.ResponseWriter, r *http.Request) {

@@ -8,7 +8,9 @@ import (
 // パニックハンドラ
 func Recovery(h http.Handler) http.Handler {
 
-	// 今回のコードだと，これはNewRouterが呼ばれた時に実行される
+	// ~~今回のコードだと，これはNewRouterが呼ばれた時に実行される~~
+	// これより前のミドルウェアがあったときはその限りじゃないようだ
+	// よく考えればそりゃそうか
 	// クロージャ内はリクエストが来た時に動くことがわかるように，こういうロギングをつけてみた
 	log.Println("Recovery Middlware started")
 

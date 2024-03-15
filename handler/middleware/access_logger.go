@@ -16,7 +16,6 @@ type LogContent struct {
 	Os      string `json:"os"`
 }
 
-// パニックハンドラ
 func AccessLogger(h http.Handler) http.Handler {
 
 	// 今回のコードだと，これはNewRouterが呼ばれた時に実行される
