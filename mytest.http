@@ -1,25 +1,60 @@
 GET http://localhost:8080/healthz
 
+# 必ずpanicを起こすエンドポイント
+GET http://localhost:8080/do-panic
 
 # basic認証のテスト
 ## 必ずpanicを起こすエンドポイント
 ### 正常系
-GET http://localhost:8080/do-panic
-Authorization: Basic 略
+GET http://localhost:8080/auth/do-panic
+Authorization: Basic a b
 
 
 ### 異常系
 
 ### 間違った情報
-GET http://localhost:8080/do-panic
+GET http://localhost:8080/auth/do-panic
 Authorization: Basic turtle dog
 
 ### 情報が空
-GET http://localhost:8080/do-panic
+GET http://localhost:8080/auth/do-panic
 Authorization: Basic
 
 ### 情報がない
-GET http://localhost:8080/do-panic
+GET http://localhost:8080/auth/do-panic
 
 # グレイスフルシャットダウンのテスト
 GET http://localhost:8080/graceful-shutdown
+
+
+# DBのテスト
+## Todoの取得
+GET http://localhost:8080/todos
+
+## Todoの作成
+POST http://localhost:8080/todos
+Content-Type: application/json
+
+{
+  "subject": "test",
+  "description": "test"
+}
+
+
+## Todoの更新
+PUT http://localhost:8080/todos
+Content-Type: application/json
+
+{
+    "id": 1,
+  "subject": "tttt",
+  "description": "ttttt"
+}
+
+## Todoの削除
+DELETE http://localhost:8080/todos
+Content-Type: application/json
+
+{
+    "ids": [1, 2, 3]
+}
