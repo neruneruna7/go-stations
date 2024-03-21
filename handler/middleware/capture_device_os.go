@@ -39,6 +39,7 @@ func CaptureDeviceOs(h http.Handler) http.Handler {
 		// 連鎖する以上，引数でとっているハンドラ（h）を，何かしら処理あるいは次に渡す必要があるはず
 		// それがこのServeHTTPかな？
 		// であるならば，コード内でのこのserveHttpの実行場所には，時間軸の関係があるはず
+		log.Println("CaptureDeviceOs Middlware calling next handler")
 		h.ServeHTTP(w, r2)
 		log.Println("Closure CaptureDeviceOs Middlware fnished")
 	}

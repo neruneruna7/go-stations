@@ -25,7 +25,7 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 
 // Create handles the endpoint that creates the TODO.
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
-	var todo, e = h.svc.CreateTODO(ctx, req.Subject, req.Description)
+	todo, e := h.svc.CreateTODO(ctx, req.Subject, req.Description)
 	if e != nil {
 		return nil, e
 	}
@@ -69,27 +69,27 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateTodoRequestDecode(req *model.CreateTODORequest, r *http.Request) error {
-	var decoder = json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(r.Body)
 	return decoder.Decode(&req)
 }
 
 func CreateTodoResponseEncode(res *model.CreateTODOResponse, w http.ResponseWriter) error {
-	var encoder = json.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	return encoder.Encode(res)
 }
 
 func UpdateTodoRequestDecode(req *model.UpdateTODORequest, r *http.Request) error {
-	var decoder = json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(r.Body)
 	return decoder.Decode(&req)
 }
 
 func UpdateTodoResponseEncode(res *model.UpdateTODOResponse, w http.ResponseWriter) error {
-	var encoder = json.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	return encoder.Encode(res)
 }
 
 func ReadTodoRequestDecode(req *model.ReadTODORequest, r *http.Request) error {
-	var id_string = r.URL.Query().Get("prev_id")
+	id_string := r.URL.Query().Get("prev_id")
 
 	log.Println(id_string)
 	id, err := strconv.ParseInt(id_string, 10, 64)
@@ -98,7 +98,7 @@ func ReadTodoRequestDecode(req *model.ReadTODORequest, r *http.Request) error {
 	}
 
 	log.Println(id)
-	var size_string = r.URL.Query().Get("size")
+	size_string := r.URL.Query().Get("size")
 	size, err := strconv.ParseInt(size_string, 10, 64)
 	if err != nil {
 		// スキーマより デフォルト値が５なので
@@ -111,24 +111,24 @@ func ReadTodoRequestDecode(req *model.ReadTODORequest, r *http.Request) error {
 }
 
 func ReadTodoResponseEncode(res *model.ReadTODOResponse, w http.ResponseWriter) error {
-	var encoder = json.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	return encoder.Encode(res)
 }
 
 func DeleteTodoRequestDecode(req *model.DeleteTODORequest, r *http.Request) error {
-	var decoder = json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(r.Body)
 	return decoder.Decode(&req)
 }
 
 // 正直，シリアライズするところとレスポンス書き込みの責務を分離したい
 func DeleteTodoResponseEncode(res *model.DeleteTODOResponse, w http.ResponseWriter) error {
-	var encoder = json.NewEncoder(w)
+	encoder := json.NewEncoder(w)
 	return encoder.Encode(res)
 }
 
 func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req = model.CreateTODORequest{}
+	req := model.CreateTODORequest{}
 
 	err := CreateTodoRequestDecode(&req, r)
 	if err != nil {
@@ -144,12 +144,12 @@ func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res = model.CreateTODOResponse{
+	res := model.CreateTODOResponse{
 		TODO: *todo,
 	}
-	var err2 = CreateTodoResponseEncode(&res, w)
-	if err2 != nil {
-		log.Println(err2)
+	err = CreateTodoResponseEncode(&res, w)
+	if err != nil {
+		log.Println(err)
 		http.Error(w, "failed to encode response", http.StatusBadRequest)
 		return
 	}
@@ -157,7 +157,7 @@ func (h *TODOHandler) TodoPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req = model.UpdateTODORequest{}
+	req := model.UpdateTODORequest{}
 
 	err := UpdateTodoRequestDecode(&req, r)
 	if err != nil {
@@ -173,10 +173,10 @@ func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res = model.UpdateTODOResponse{
+	res := model.UpdateTODOResponse{
 		TODO: *todo,
 	}
-	var err2 = UpdateTodoResponseEncode(&res, w)
+	err2 := UpdateTodoResponseEncode(&res, w)
 	if err2 != nil {
 		log.Println(err2)
 		http.Error(w, "failed to json encode", http.StatusBadRequest)
@@ -186,7 +186,7 @@ func (h *TODOHandler) TodoPutHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *TODOHandler) TodoGetHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req = model.ReadTODORequest{}
+	req := model.ReadTODORequest{}
 
 	err := ReadTodoRequestDecode(&req, r)
 	if err != nil {
@@ -202,11 +202,11 @@ func (h *TODOHandler) TodoGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res = model.ReadTODOResponse{
+	res := model.ReadTODOResponse{
 		TODOs: todos,
 	}
 
-	var err2 = ReadTodoResponseEncode(&res, w)
+	err2 := ReadTodoResponseEncode(&res, w)
 	if err2 != nil {
 		log.Println(err2)
 		http.Error(w, "failed to json encode", http.StatusBadRequest)
@@ -216,7 +216,7 @@ func (h *TODOHandler) TodoGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *TODOHandler) TodoDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	// エラーを処理する責務を持つ
-	var req = model.DeleteTODORequest{}
+	req := model.DeleteTODORequest{}
 
 	err := DeleteTodoRequestDecode(&req, r)
 	if err != nil {
@@ -245,9 +245,9 @@ func (h *TODOHandler) TodoDeleteHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var res = model.DeleteTODOResponse{}
+	res := model.DeleteTODOResponse{}
 
-	var err3 = DeleteTodoResponseEncode(&res, w)
+	err3 := DeleteTodoResponseEncode(&res, w)
 	if err3 != nil {
 		log.Println(err3)
 		http.Error(w, "failed to json encode", http.StatusBadRequest)

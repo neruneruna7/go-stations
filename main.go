@@ -35,7 +35,7 @@ func realMain() error {
 		log.Println("Error loading .env file")
 	}
 
-	var basic_auth_config = basic_auth_config_loader()
+	basic_auth_config := basic_auth_config_loader()
 
 	log.Println("Loading PORT env")
 	port := os.Getenv("PORT")
@@ -71,7 +71,7 @@ func realMain() error {
 	log.Println("running port:", port)
 	// TODO: サーバーをlistenする
 	// portを束縛する方法があるはず
-	var server = http.Server{
+	server := http.Server{
 		Addr:    port,
 		Handler: mux,
 	}
@@ -79,11 +79,10 @@ func realMain() error {
 	// linixはカーネルからいろいろシグナル来ることもあるしね
 	// どのシグナルとか割り込みに対応するかはあとで考えよう
 	// とりあえず，Ctrl+Cへの対応
-	var ctx, stop = signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
 	// このstopの役割がわからん
 	// deferをつけずにやったら起動して即終了したな
 	// signal receivedってログには来てるし，この関数の最後まで突き抜けたのかな
-
 	defer stop()
 
 	// ゴルーチンでサーバーを起動する
@@ -98,15 +97,17 @@ func realMain() error {
 	// 受け取る変数がないということは，事実上待機してるのと同じかな
 	// ctx.Done()の内部では，NotifyContexで設定したシグナルが来るまで休眠してると思われる
 	log.Println("signal received")
-	// 5秒で終了するようにする
+	// 5秒で終了するようにタイムアウトを設定
 	// でも，5秒待たずに終了することがある
-	var ctx2, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// 別にctxはgoroutinに渡してないし，このcancelはmain groutinを終わらせるのか？
 
 	// もしや，待つまでもなくシャットダウンが完了して，この関数が終了したとき
 	// このdefer cancel()が待つのを終わらせるのか？
 	// 実行されないようにしても待つ必要がなければすぐ終了したな
 	// 必要なら待ってたし 役割はなんだろう
 	// deferをつけずにやったらシグナル即終了になったな
+	// goroutinのリソースを解放するものらしいが...
 	defer cancel()
 	// cancel()
 
@@ -115,8 +116,8 @@ func realMain() error {
 	// 両方動作しないようにすると，シグナルで待たずに即終了するようになった．
 	// どちらか片方でも動作すると，シグナル待ちになった
 	// いやまて．どっちもコメントアウトでもシグナル待ちになるわ
-
-	err = server.Shutdown(ctx2)
+	// 多分このShutdownでlisten停止命令を送るのと，停止待ち，タイムアウトを過ぎたら強制終了をやってるはず
+	err = server.Shutdown(ctx)
 	if err != nil {
 		return err
 	}

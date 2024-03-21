@@ -137,19 +137,19 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 
 	if rowsAffected == 0 {
 		// え，error側がポインタ渡すって情報はどこなの
-		return nil, &model.ErrNotFound{}
+		return nil, model.ErrNotFound{}
 	}
 
 	log.Println("Affected row count: ", rowsAffected)
 
-	var rows = s.db.QueryRowContext(ctx, confirm, id)
-	var todo = model.TODO{}
+	rows := s.db.QueryRowContext(ctx, confirm, id)
+	todo := model.TODO{}
 	todo.ID = id
 	// err := rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 	// エラーになる．えぇ...
-	var err2 = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
-	if err2 != nil {
-		return nil, err2
+	err = rows.Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
+	if err != nil {
+		return nil, err
 	}
 
 	log.Println("UpdateTODO finished")
