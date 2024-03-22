@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -91,7 +92,10 @@ func realMain() error {
 
 	// ゴルーチンでサーバーを起動する
 	go func() {
-		server.ListenAndServe()
+		err := server.ListenAndServe()
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Println("server closed with error:", err)
+		}
 	}()
 
 	log.Println("awaiting signal")
