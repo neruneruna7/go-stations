@@ -79,10 +79,14 @@ func realMain() error {
 	// linixはカーネルからいろいろシグナル来ることもあるしね
 	// どのシグナルとか割り込みに対応するかはあとで考えよう
 	// とりあえず，Ctrl+Cへの対応
+	// background contextを作成
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
+
 	// このstopの役割がわからん
 	// deferをつけずにやったら起動して即終了したな
 	// signal receivedってログには来てるし，この関数の最後まで突き抜けたのかな
+	// ctxと対応してるgoroutinを解放するはず
+	// goroutinと紐づいてないから，今回は特に関係ない？
 	defer stop()
 
 	// ゴルーチンでサーバーを起動する

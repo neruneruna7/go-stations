@@ -25,10 +25,10 @@ func BasicAuth(b *model.BasicAuthConfig, h http.Handler) http.Handler {
 		}
 
 		// タイミング攻撃対策
-		var eq_userid = subtle.ConstantTimeCompare([]byte(userid), []byte(b.BasicAuthUserId))
-		var eq_password = subtle.ConstantTimeCompare([]byte(password), []byte(b.BasicAuthPassword))
+		var isEqUserId = subtle.ConstantTimeCompare([]byte(userid), []byte(b.BasicAuthUserId))
+		var isEqPassword = subtle.ConstantTimeCompare([]byte(password), []byte(b.BasicAuthPassword))
 
-		if eq_userid != 1 || eq_password != 1 {
+		if isEqUserId != 1 || isEqPassword != 1 {
 			log.Println("BasicAuth failed")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
