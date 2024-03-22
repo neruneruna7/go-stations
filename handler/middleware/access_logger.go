@@ -26,23 +26,23 @@ func AccessLogger(h http.Handler) http.Handler {
 		log.Println("Closure AccessLogger Middlware started")
 
 		// アクセスしてきたときの時間を記録する
-		var start_time = time.Now()
+		var startTime = time.Now()
 
 		defer func() {
 			log.Println("deferd AccessLogger Middlware started")
-			var end_time = time.Now()
-			var latency = end_time.Sub(start_time).Milliseconds()
+			var endTime = time.Now()
+			var latency = endTime.Sub(startTime).Milliseconds()
 			var path = r.URL.Path
 			var os = r.Context().Value(CTX_OS_KEY).(string)
 
-			var log_content = &LogContent{
-				Timestamp: start_time,
+			var logContent = &LogContent{
+				Timestamp: startTime,
 				Latency:   latency,
 				Path:      path,
 				Os:        os,
 			}
 
-			serialized, err := json.Marshal(log_content)
+			serialized, err := json.Marshal(logContent)
 			if err != nil {
 				log.Println(err)
 			}

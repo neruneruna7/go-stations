@@ -21,7 +21,7 @@ func CommonMiddlwares(h http.Handler) http.Handler {
 	// }
 	// log.Println("CommonMiddlwares Middlware finished")
 
-	var middlewares_wraped_handler = Recovery(CaptureDeviceOs(AccessLogger(h)))
+	var middlewaresWrapedHandler = Recovery(CaptureDeviceOs(AccessLogger(h)))
 	// return http.HandlerFunc(fn)
-	return middlewares_wraped_handler
+	return middlewaresWrapedHandler
 }

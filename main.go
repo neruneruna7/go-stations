@@ -35,7 +35,7 @@ func realMain() error {
 		log.Println("Error loading .env file")
 	}
 
-	basic_auth_config := basic_auth_config_loader()
+	basicAuthConfig := basicAuthConfigLoader()
 
 	log.Println("Loading PORT env")
 	port := os.Getenv("PORT")
@@ -66,7 +66,7 @@ func realMain() error {
 	defer todoDB.Close()
 
 	// NOTE: 新しいエンドポイントの登録はrouter.NewRouterの内部で行うようにする
-	mux := router.NewRouter(todoDB, basic_auth_config)
+	mux := router.NewRouter(todoDB, basicAuthConfig)
 
 	log.Println("running port:", port)
 	// TODO: サーバーをlistenする
@@ -125,12 +125,12 @@ func realMain() error {
 	return nil
 }
 
-func basic_auth_config_loader() *model.BasicAuthConfig {
-	var basic_auth_user_id = os.Getenv("BASIC_AUTH_USER_ID")
-	var basic_auth_password = os.Getenv("BASIC_AUTH_PASSWORD")
-	var basic_auth_config = model.BasicAuthConfig{
-		BasicAuthUserId:   basic_auth_user_id,
-		BasicAuthPassword: basic_auth_password,
+func basicAuthConfigLoader() *model.BasicAuthConfig {
+	var basicAuthUserId = os.Getenv("BASIC_AUTH_USER_ID")
+	var basicAuthPassword = os.Getenv("BASIC_AUTH_PASSWORD")
+	var basicAuthConfig = model.BasicAuthConfig{
+		BasicAuthUserId:   basicAuthUserId,
+		BasicAuthPassword: basicAuthPassword,
 	}
-	return &basic_auth_config
+	return &basicAuthConfig
 }

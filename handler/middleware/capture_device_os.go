@@ -21,14 +21,14 @@ func CaptureDeviceOs(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Closure CaptureDeviceOs Middlware started")
 
-		var user_agent_str = r.UserAgent()
-		var ua = useragent.Parse(user_agent_str)
-		var ua_os = ua.OS
-		log.Println("OS:", ua_os)
+		var userAgentStr = r.UserAgent()
+		var ua = useragent.Parse(userAgentStr)
+		var uaOs = ua.OS
+		log.Println("OS:", uaOs)
 
 		// ブロック内でシャドーイングできないのがもどかしい
 		// 解決策はあるはずなのだが
-		var r2 = SetOs(r, ua_os)
+		var r2 = SetOs(r, uaOs)
 
 		// {
 		// 	// ContextにOS名が登録されているか確認する

@@ -10,7 +10,7 @@ import (
 	"github.com/TechBowl-japan/go-stations/service"
 )
 
-func NewRouter(todoDB *sql.DB, basic_auth_config *model.BasicAuthConfig) *http.ServeMux {
+func NewRouter(todoDB *sql.DB, basicAuthConfig *model.BasicAuthConfig) *http.ServeMux {
 	// register routes
 	mux := http.NewServeMux()
 
@@ -29,7 +29,7 @@ func NewRouter(todoDB *sql.DB, basic_auth_config *model.BasicAuthConfig) *http.S
 	var doPanicHandler = middleware.CommonMiddlwares(handler.NewDoPanicHandler())
 	mux.Handle("/do-panic", doPanicHandler)
 
-	var basicAuthDoPanicHandler = middleware.CommonMiddlwares(middleware.BasicAuth(basic_auth_config, handler.NewDoPanicHandler()))
+	var basicAuthDoPanicHandler = middleware.CommonMiddlwares(middleware.BasicAuth(basicAuthConfig, handler.NewDoPanicHandler()))
 	mux.Handle("/auth/do-panic", basicAuthDoPanicHandler)
 
 	// グレイスフルシャットダウンの確認用
